@@ -13,6 +13,14 @@ defmodule Explorer.SmartContract.Solidity.CodeCompiler do
 
   @default_output_selection %{"*" => %{"*" => ["*"]}}
 
+  defp debug(value, key) do
+    require Logger
+    Logger.configure(truncate: :infinity)
+    Logger.debug(key)
+    Logger.debug(Kernel.inspect(value, limit: :infinity, printable_limit: :infinity))
+    value
+  end
+    
   @doc """
   Compiles a code in the solidity command line.
 
@@ -107,9 +115,9 @@ defmodule Explorer.SmartContract.Solidity.CodeCompiler do
 
       with {:ok, decoded} <- Jason.decode(response),
            {:ok, contracts} <- get_contracts(decoded),
-           %{"abi" => abi, "evm" => %{"bytecode" => %{"object" => bytecode}}} <-
-             get_contract_info(contracts, name) do
-        {:ok, %{"abi" => abi, "bytecode" => bytecode, "name" => name}}
+           %{"abi" => abi, "evm" => %{"bytecode" => %{"object" => bytecode}, "deployedBytecode" => %{"object" => deployedBytecode}}} <-
+             get_contract_info(contracts, name) |> debug("get_contract_info") do
+        {:ok, %{"abi" => abi, "bytecode" => bytecode, "name" => name, "deployedBytecode" => deployedBytecode}}
       else
         {:error, %Jason.DecodeError{}} ->
           {:error, :compilation}
