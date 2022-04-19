@@ -1003,7 +1003,7 @@ defmodule Explorer.SmartContract.Solidity.VerifierTest do
 
     test "issue 4758" do
       contract_source_code =
-        "#{File.cwd!()}/test/support/fixture/smart_contract/issue_5127.sol"
+        "#{File.cwd!()}/test/support/fixture/smart_contract/issue_4758.sol"
         |> File.read!()
 
       bytecode =

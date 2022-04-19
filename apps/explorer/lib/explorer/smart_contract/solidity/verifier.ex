@@ -173,7 +173,7 @@ defmodule Explorer.SmartContract.Solidity.Verifier do
   end
 
   defp compare_bytecodes(
-         %{"abi" => abi, "bytecode" => bytecode, "deployedBytecode" => deployedBytecode},
+         %{"abi" => abi, "bytecode" => bytecode, "deployedBytecode" => deployed_bytecode},
          address_hash,
          arguments_data,
          autodetect_constructor_arguments,
@@ -182,7 +182,7 @@ defmodule Explorer.SmartContract.Solidity.Verifier do
        ),
        do:
          compare_bytecodes(
-           {:ok, %{"abi" => abi, "bytecode" => bytecode, "deployedBytecode" => deployedBytecode}},
+           {:ok, %{"abi" => abi, "bytecode" => bytecode, "deployedBytecode" => deployed_bytecode}},
            address_hash,
            arguments_data,
            autodetect_constructor_arguments,
@@ -191,14 +191,14 @@ defmodule Explorer.SmartContract.Solidity.Verifier do
          )
 
     defp compare_bytecodes(
-          {:ok, %{"abi" => abi, "bytecode" => bytecode, "deployedBytecode" => deployedBytecode}},
+          {:ok, %{"abi" => abi, "bytecode" => bytecode, "deployedBytecode" => deployed_bytecode}},
           address_hash,
           _arguments_data,
           _autodetect_constructor_arguments,
           _contract_source_code,
           _contract_name
         ) do
-    {local_meta, local_meta_length} = extract_meta_from_deployed_bytecode(deployedBytecode) |> debug("extract_meta_from_deployed_bytecode(deployedBytecode)")
+    {local_meta, local_meta_length} = extract_meta_from_deployed_bytecode(deployed_bytecode) |> debug("extract_meta_from_deployed_bytecode(deployed_bytecode)")
     solc_local = decode_meta(local_meta)["solc"] |> debug("local solc")
     local_bytecode_without_meta = bytecode |> String.replace(local_meta <> local_meta_length, "") |> String.replace("0x", "") |> debug("local bytecode_without_meta")
 
