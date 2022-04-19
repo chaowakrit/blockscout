@@ -189,8 +189,7 @@ defmodule Explorer.SmartContract.Solidity.Verifier do
          _contract_source_code,
          _contract_name
        ) do
-    {local_meta, local_meta_length} =
-      extract_meta_from_deployed_bytecode(deployed_bytecode)
+    {local_meta, local_meta_length} = extract_meta_from_deployed_bytecode(deployed_bytecode)
 
     solc_local = decode_meta(local_meta)["solc"]
 
@@ -201,8 +200,7 @@ defmodule Explorer.SmartContract.Solidity.Verifier do
 
     bc_deployed_bytecode = Chain.smart_contract_bytecode(address_hash)
 
-    {bc_meta, bc_meta_length} =
-      extract_meta_from_deployed_bytecode(bc_deployed_bytecode)
+    {bc_meta, bc_meta_length} = extract_meta_from_deployed_bytecode(bc_deployed_bytecode)
 
     solc_bc = decode_meta(bc_meta)["solc"]
 
