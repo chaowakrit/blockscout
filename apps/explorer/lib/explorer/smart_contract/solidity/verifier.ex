@@ -156,14 +156,6 @@ defmodule Explorer.SmartContract.Solidity.Verifier do
     )
   end
 
-  defp debug(value, key) do
-    require Logger
-    Logger.configure(truncate: :infinity)
-    Logger.debug(key)
-    Logger.debug(Kernel.inspect(value, limit: :infinity, printable_limit: :infinity))
-    value
-  end
-
   defp compare_bytecodes({:error, :name}, _, _, _, _, _), do: {:error, :name}
   defp compare_bytecodes({:error, _}, _, _, _, _, _), do: {:error, :compilation}
 
@@ -199,23 +191,20 @@ defmodule Explorer.SmartContract.Solidity.Verifier do
        ) do
     {local_meta, local_meta_length} =
       extract_meta_from_deployed_bytecode(deployed_bytecode)
-      |> debug("extract_meta_from_deployed_bytecode(deployed_bytecode)")
 
-    solc_local = decode_meta(local_meta)["solc"] |> debug("local solc")
+    solc_local = decode_meta(local_meta)["solc"]
 
     local_bytecode_without_meta =
       bytecode
       |> String.replace(local_meta <> local_meta_length, "")
       |> String.replace("0x", "")
-      |> debug("local bytecode_without_meta")
 
-    bc_deployed_bytecode = Chain.smart_contract_bytecode(address_hash) |> debug("bc_deployed_bytecode")
+    bc_deployed_bytecode = Chain.smart_contract_bytecode(address_hash)
 
     {bc_meta, bc_meta_length} =
       extract_meta_from_deployed_bytecode(bc_deployed_bytecode)
-      |> debug("extract_meta_from_deployed_bytecode(bc_deployed_bytecode)")
 
-    solc_bc = decode_meta(bc_meta)["solc"] |> debug("bc solc")
+    solc_bc = decode_meta(bc_meta)["solc"]
 
     blockchain_created_tx_input_without_meta =
       case Chain.smart_contract_creation_tx_bytecode(address_hash) do
@@ -226,11 +215,8 @@ defmodule Explorer.SmartContract.Solidity.Verifier do
         _ ->
           ""
       end
-      |> debug("smart_contract_creation_tx_bytecode")
 
     bc_replaced_local = String.replace(blockchain_created_tx_input_without_meta, local_bytecode_without_meta, "")
-
-    # empty_constructor_arguments = arguments_data == "" or arguments_data == nil
 
     cond do
       solc_local != solc_bc ->
@@ -245,7 +231,6 @@ defmodule Explorer.SmartContract.Solidity.Verifier do
       true ->
         {:ok, %{abi: abi, constructor_arguments: bc_replaced_local}}
     end
-    |> debug("RESULT")
   end
 
   defp extract_meta_from_deployed_bytecode(code_unknown_case) do
