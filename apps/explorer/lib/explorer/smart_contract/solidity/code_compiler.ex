@@ -108,7 +108,10 @@ defmodule Explorer.SmartContract.Solidity.CodeCompiler do
 
       with {:ok, decoded} <- Jason.decode(response),
            {:ok, contracts} <- get_contracts(decoded),
-           %{"abi" => abi, "evm" => %{"bytecode" => %{"object" => bytecode}, "deployedBytecode" => %{"object" => deployed_bytecode}}} <-
+           %{
+             "abi" => abi,
+             "evm" => %{"bytecode" => %{"object" => bytecode}, "deployedBytecode" => %{"object" => deployed_bytecode}}
+           } <-
              get_contract_info(contracts, name) do
         {:ok, %{"abi" => abi, "bytecode" => bytecode, "name" => name, "deployedBytecode" => deployed_bytecode}}
       else
@@ -193,8 +196,18 @@ defmodule Explorer.SmartContract.Solidity.CodeCompiler do
   defp fetch_candidates(contracts, "") when is_map(contracts) do
     candidates =
       for {file, content} <- contracts,
-          {contract_name, %{"abi" => abi, "evm" => %{"bytecode" => %{"object" => bytecode}, "deployedBytecode" => %{"object" => deployed_bytecode}}}} <- content,
-          do: %{"abi" => abi, "bytecode" => bytecode, "name" => contract_name, "file_path" => file, "deployedBytecode" => deployed_bytecode}
+          {contract_name,
+           %{
+             "abi" => abi,
+             "evm" => %{"bytecode" => %{"object" => bytecode}, "deployedBytecode" => %{"object" => deployed_bytecode}}
+           }} <- content,
+          do: %{
+            "abi" => abi,
+            "bytecode" => bytecode,
+            "name" => contract_name,
+            "file_path" => file,
+            "deployedBytecode" => deployed_bytecode
+          }
 
     {:ok, candidates}
   end
@@ -206,9 +219,19 @@ defmodule Explorer.SmartContract.Solidity.CodeCompiler do
     else
       candidates =
         for {file, content} <- contracts,
-            {contract_name, %{"abi" => abi, "evm" => %{"bytecode" => %{"object" => bytecode}, "deployedBytecode" => %{"object" => deployed_bytecode}}}} <- content,
+            {contract_name,
+             %{
+               "abi" => abi,
+               "evm" => %{"bytecode" => %{"object" => bytecode}, "deployedBytecode" => %{"object" => deployed_bytecode}}
+             }} <- content,
             contract_name == name,
-            do: %{"abi" => abi, "bytecode" => bytecode, "name" => contract_name, "file_path" => file, "deployedBytecode" => deployed_bytecode}
+            do: %{
+              "abi" => abi,
+              "bytecode" => bytecode,
+              "name" => contract_name,
+              "file_path" => file,
+              "deployedBytecode" => deployed_bytecode
+            }
 
       {:ok, candidates}
     end
@@ -217,8 +240,20 @@ defmodule Explorer.SmartContract.Solidity.CodeCompiler do
   defp fetch_candidates(contracts, file_name, name)
        when is_binary(name) and is_binary(file_name) and is_map(contracts) do
     case contracts[file_name][name] do
-      %{"abi" => abi, "evm" => %{"bytecode" => %{"object" => bytecode}, "deployedBytecode" => %{"object" => deployed_bytecode}}} ->
-        {:ok, [%{"abi" => abi, "bytecode" => bytecode, "name" => name, "file_path" => file_name, "deployedBytecode" => deployed_bytecode}]}
+      %{
+        "abi" => abi,
+        "evm" => %{"bytecode" => %{"object" => bytecode}, "deployedBytecode" => %{"object" => deployed_bytecode}}
+      } ->
+        {:ok,
+         [
+           %{
+             "abi" => abi,
+             "bytecode" => bytecode,
+             "name" => name,
+             "file_path" => file_name,
+             "deployedBytecode" => deployed_bytecode
+           }
+         ]}
 
       _ ->
         {:ok, []}

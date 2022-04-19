@@ -156,7 +156,6 @@ defmodule Explorer.SmartContract.Solidity.Verifier do
     )
   end
 
-  
   defp debug(value, key) do
     require Logger
     Logger.configure(truncate: :infinity)
@@ -190,20 +189,32 @@ defmodule Explorer.SmartContract.Solidity.Verifier do
            contract_name
          )
 
-    defp compare_bytecodes(
-          {:ok, %{"abi" => abi, "bytecode" => bytecode, "deployedBytecode" => deployed_bytecode}},
-          address_hash,
-          _arguments_data,
-          _autodetect_constructor_arguments,
-          _contract_source_code,
-          _contract_name
-        ) do
-    {local_meta, local_meta_length} = extract_meta_from_deployed_bytecode(deployed_bytecode) |> debug("extract_meta_from_deployed_bytecode(deployed_bytecode)")
+  defp compare_bytecodes(
+         {:ok, %{"abi" => abi, "bytecode" => bytecode, "deployedBytecode" => deployed_bytecode}},
+         address_hash,
+         _arguments_data,
+         _autodetect_constructor_arguments,
+         _contract_source_code,
+         _contract_name
+       ) do
+    {local_meta, local_meta_length} =
+      extract_meta_from_deployed_bytecode(deployed_bytecode)
+      |> debug("extract_meta_from_deployed_bytecode(deployed_bytecode)")
+
     solc_local = decode_meta(local_meta)["solc"] |> debug("local solc")
-    local_bytecode_without_meta = bytecode |> String.replace(local_meta <> local_meta_length, "") |> String.replace("0x", "") |> debug("local bytecode_without_meta")
+
+    local_bytecode_without_meta =
+      bytecode
+      |> String.replace(local_meta <> local_meta_length, "")
+      |> String.replace("0x", "")
+      |> debug("local bytecode_without_meta")
 
     bc_deployed_bytecode = Chain.smart_contract_bytecode(address_hash) |> debug("bc_deployed_bytecode")
-    {bc_meta, bc_meta_length} = extract_meta_from_deployed_bytecode(bc_deployed_bytecode) |> debug("extract_meta_from_deployed_bytecode(bc_deployed_bytecode)")
+
+    {bc_meta, bc_meta_length} =
+      extract_meta_from_deployed_bytecode(bc_deployed_bytecode)
+      |> debug("extract_meta_from_deployed_bytecode(bc_deployed_bytecode)")
+
     solc_bc = decode_meta(bc_meta)["solc"] |> debug("bc solc")
 
     blockchain_created_tx_input_without_meta =
@@ -214,10 +225,11 @@ defmodule Explorer.SmartContract.Solidity.Verifier do
 
         _ ->
           ""
-      end |> debug("smart_contract_creation_tx_bytecode")
-      
+      end
+      |> debug("smart_contract_creation_tx_bytecode")
+
     bc_replaced_local = String.replace(blockchain_created_tx_input_without_meta, local_bytecode_without_meta, "")
-    
+
     # empty_constructor_arguments = arguments_data == "" or arguments_data == nil
 
     cond do
@@ -226,13 +238,14 @@ defmodule Explorer.SmartContract.Solidity.Verifier do
 
       !String.contains?(blockchain_created_tx_input_without_meta, local_bytecode_without_meta) ->
         {:error, :generated_bytecode}
-      
+
       bc_replaced_local == "" ->
         {:ok, %{abi: abi}}
 
-      true -> 
+      true ->
         {:ok, %{abi: abi, constructor_arguments: bc_replaced_local}}
-    end |> debug("RESULT")
+    end
+    |> debug("RESULT")
   end
 
   defp extract_meta_from_deployed_bytecode(code_unknown_case) do
@@ -240,10 +253,10 @@ defmodule Explorer.SmartContract.Solidity.Verifier do
          code <- String.downcase(code_unknown_case),
          last_2_bytes <- code |> String.slice(-4..-1),
          {meta_length, ""} <- last_2_bytes |> Integer.parse(16),
-         meta <- String.slice(code, -(meta_length + 2) * 2 .. -5) do
+         meta <- String.slice(code, (-(meta_length + 2) * 2)..-5) do
       {meta, last_2_bytes}
     else
-      _ -> 
+      _ ->
         {"", ""}
     end
   end
@@ -260,13 +273,13 @@ defmodule Explorer.SmartContract.Solidity.Verifier do
 
   # credo:disable-for-next-line /Complexity/
   def compare_bytecodes_(
-         {:ok, %{"abi" => abi, "bytecode" => bytecode}},
-         address_hash,
-         arguments_data,
-         autodetect_constructor_arguments,
-         contract_source_code,
-         contract_name
-       ) do
+        {:ok, %{"abi" => abi, "bytecode" => bytecode}},
+        address_hash,
+        arguments_data,
+        autodetect_constructor_arguments,
+        contract_source_code,
+        contract_name
+      ) do
     %{
       "metadata_hash" => _generated_metadata_hash,
       "bytecode" => generated_bytecode,
